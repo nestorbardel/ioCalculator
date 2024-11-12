@@ -1,14 +1,25 @@
-import {useState} from 'react';
+import {useRef, useState} from 'react';
+
+enum Operator {
+    add,
+    subtract,
+    multiply,
+    divide,
+}
 
 export const useCalculator = () => {
     const [number, setNumber] = useState<string>('0');
+    const [prevNumber, setPrevNumber] = useState<string>('0');
+
+    const lastOperation = useRef<Operator>();
 
     const clean = () => {
         setNumber('0');
+        setPrevNumber('0');
     };
 
     const deleteOperation = () => {
-        if(number.length === 1) return setNumber('0');
+        if(number.length === 1) {return setNumber('0');}
         setNumber(number.slice(0, -1));
     };
 
@@ -21,7 +32,7 @@ export const useCalculator = () => {
     };
 
     const buildNumber = (numberString: string): void => {
-        if (number.includes('.') && numberString === '.') return;
+        if (number.includes('.') && numberString === '.') {return;}
         setNumber(number + numberString);
 
         if (number.startsWith('0') || number.startsWith('-0')) {
@@ -51,14 +62,46 @@ export const useCalculator = () => {
         setNumber(number + numberString);
     };
 
+    const setLastNumber = () => {
+        if(number.endsWith('.')){
+            setPrevNumber(number.slice(0,-1));
+        } else {
+            setPrevNumber(number);
+        }
+
+        setNumber('0');
+    };
+
+    const divideOperation = () => {
+        setLastNumber();
+        lastOperation.current = Operator.divide;
+    };
+    const multiplyOperation = () => {
+        setLastNumber();
+        lastOperation.current = Operator.multiply;
+    };
+    const subtractOperation = () => {
+        setLastNumber();
+        lastOperation.current = Operator.subtract;
+    };
+    const addOperation = () => {
+        setLastNumber();
+        lastOperation.current = Operator.add;
+    };
+
     return {
         //Properties
         number,
+        prevNumber,
 
         //Methods
         buildNumber,
         toggleSign,
         clean,
         deleteOperation,
+        divideOperation,
+        multiplyOperation,
+        subtractOperation,
+        addOperation,
     };
 };
